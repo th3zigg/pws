@@ -1,0 +1,92 @@
+<link rel="import" href="pws-app-elements/pws-elements.html">
+<link rel="import" href="bower_components/polymerfire/polymerfire.html">
+
+<dom-module id="pws-app">
+  <template>
+    <style include="pws-app-shared-styles"></style>
+
+    <firebase-auth
+        id="auth"
+        app-name="pws"
+        provider="google"
+        signed-in="{{signedIn}}"
+        user="{{user}}">
+    </firebase-auth>
+
+    <firebase-document
+        id="document"
+        app-name="pws"
+        path="[[editableShiftId]]"
+        data="{{editableShift}}">
+    </firebase-document>
+
+    <firebase-query
+        app-name="pws"
+        path="/shifts/[[user.uid]]"
+        data="{{shifts}}">
+    </firebase-query>
+
+    <firebase-query
+        app-name="pws"
+        path="/locations"
+        data="{{locations}}">
+    </firebase-query>
+
+    <pws-toolbar
+        signed-in="[[signedIn]]"
+        on-sign-out="signOut"></pws-toolbar>
+
+    <pws-login
+        on-sign-in="signIn"
+        signed-in="[[signedIn]]"
+        disabled="[[!online]]">
+    </pws-login>
+
+    <pws-shift-editor
+        id="editor"
+        locations="[[locations]]"
+        shift="{{editableShift}}"
+        on-close="commitChange"></pws-shift-editor>
+
+        <div class="notes">
+          <template is="dom-repeat" items="[[shifts]]" as="note">
+            <pws-shift
+                id$="[[note.$key]]"
+                shift="[[note]]"
+                locations="[[locations]]"
+                on-tap="edit">
+            </pws-shift>
+          </template>
+        </div>
+
+    <paper-fab
+        icon="add"
+        on-tap="create"
+        disabled="[[!online]]"
+        aria-label="Book shift">
+    </paper-fab>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-app',
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      signIn: function() {
+        this.$.auth.signInWithPopup();
+      },
+
+      get shiftsPath() {
+        return '/shifts/' + this.user.uid;
+      },
+
+      toEditableId: function(shiftId) {
+        return this.shiftsPath + '/' + shiftId;
+      },
+
+      get isEditable() {
+        return this.online;
+      }
+    });
+  </script>
+</dom-module>

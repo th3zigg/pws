@@ -1,0 +1,101 @@
+<link rel="import" href="../bower_components/app-storage/app-network-status-behavior.html">
+<script>
+  (function() {
+    'use strict';
+
+    Polymer.PWSAppBehaviourImpl = {
+      properties: {
+        editableShiftId: {
+          type: String,
+          notify: true
+        }
+      },
+
+      get shiftsPath() {
+        return '';
+      },
+
+      get isEditable() {
+        return true;
+      },
+
+      toEditableId: function(shiftId) {
+        return shiftId;
+      },
+
+      edit: function(event) {
+        if (this.isEditable) {
+          var shiftElement = Polymer.dom(event).localTarget;
+          this.editableShiftId = this.toEditableId(shiftElement.id);
+
+          this.$.document.transactionsComplete.then(function() {
+            this.$.editor.open(shiftElement);
+          }.bind(this));
+        }
+      },
+
+      create: function() {
+        if (this.isEditable) {
+          this.editableShiftId = null;
+          this.$.editor.open();
+        }
+      },
+
+      commitChange: function(event) {
+        var changeCommits;
+
+        switch (event.detail) {
+          case 'save':
+            changeCommits = this.save();
+            break;
+          case 'delete':
+            changeCommits = this.delete();
+            break;
+          default:
+            changeCommits = Promise.resolve();
+            break;
+        }
+
+        if (this.$.query && this.$.query.refresh) {
+          changeCommits.then(function() {
+            this.$.query.refresh();
+          }.bind(this));
+        }
+      },
+
+      save: function() {
+        if (this.$.document.isNew &&
+            (this.editableShift.location && this.editableShift.date && this.editableShift.date)) {
+          this.editableShift.publishername = this.user.displayName;
+          return this.$.document.save(this.shiftsPath).then(function() {
+            this.$.document.reset();
+          }.bind(this));
+        } else {
+          console.log('not able to save');
+        }
+
+        return Promise.resolve();
+      },
+
+      delete: function() {
+        if (!this.$.document.isNew) {
+          this.$.document.destroy();
+        }
+
+        return Promise.resolve();
+      },
+
+      signOut: function() {
+        if (this.$.auth) {
+          this.$.auth.signOut();
+        }
+      }
+    };
+
+    /** @polymerBehavior */
+    Polymer.PWSAppBehaviour = [
+      Polymer.AppNetworkStatusBehavior,
+      Polymer.PWSAppBehaviourImpl
+    ];
+  })();
+</script>

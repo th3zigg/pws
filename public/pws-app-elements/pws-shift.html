@@ -1,0 +1,156 @@
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<dom-module id="pws-shift">
+  <template>
+    <style>
+      :host {
+        display: block;
+        box-sizing: border-box;
+        background-color: #fafafa;
+        color: #212121;
+        padding: 1em;
+        @apply(--paper-font-common-base);
+        @apply(--shadow-elevation-2dp);
+        border-radius: 2px;
+
+        --iron-autogrow-textarea: {
+          margin: 0;
+          padding: 0;
+          font-family: 'Roboto Slab', Times New Roman, serif;
+          white-space: pre-wrap;
+        }
+      }
+
+      iron-autogrow-textarea {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        border: 0;
+        margin: 1em 0 0;
+        padding: 0;
+        font-size: 0.9em;
+        font-family: 'Roboto Slab', Times New Roman, serif;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      h1 {
+        font-size: 1.15em;
+        margin: 0;
+        white-space: pre-wrap;
+      }
+
+      h1:not(.hidden)+p {
+        margin-top: 1em;
+      }
+
+      p {
+        margin: 0;
+        font-family: 'Roboto Slab', Times New Roman, serif;
+        font-size: 0.9em;
+        white-space: pre-wrap;
+      }
+
+      .placeholder:after {
+        content: 'Tap to edit';
+        opacity: 0.5;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .empty {
+        font-style: italic;
+        color: #737373;
+        line-height: 0;
+        pointer-events: none;
+      }
+
+      input {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+        outline: none;
+        border: 0;
+        background: transparent;
+        white-space: pre-wrap;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-size: 1.15em;
+        font-weight: bold;
+        color: #212121;
+      }
+    </style>
+    <template is="dom-if" if="[[editable]]">
+      <!-- <input is="iron-input" name="contactnumber" label="Contact Number"  bind-value="{{shift.contactnumber}}"> -->
+      <!-- <paper-input name="publishername" label="Name" value="{{shift.publishername}}" required></paper-input> -->
+      <paper-dropdown-menu label="Location">
+        <paper-listbox class="dropdown-content" attr-for-selected="locationid" selected="{{shift.location}}">
+          <template is="dom-repeat" items="[[locations]]" as="loc">
+            <paper-item locationid="[[loc.$key]]">[[loc.name]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-input name="date" label="Date" value="{{shift.date}}" required></paper-input>
+      <paper-input name="time" label="Time" value="{{shift.time}}" required></paper-input>
+      <paper-input name="contactnumber" label="Contact Number" type="number" value="{{shift.contactnumber}}" required></paper-input>
+
+    </template>
+    <template is="dom-if" if="[[!editable]]">
+      <h1>[[shift.publishername]]</h1>
+      <p>[[getLocationName(shift.location)]]</p>
+      <p>[[shift.date]] <p>[[shift.time]]</p></p>
+      <p>[[shift.contactnumber]]</p>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-shift',
+
+      properties: {
+        editable: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        lastUpdated: {
+          type: Number,
+          value: 0
+        }
+      },
+
+      getLocationName: function(locationId) {
+        var location = this.locations.find(element => element.$key === locationId);
+        if (location) {
+          return location.name;
+        }
+        return "";
+      },
+
+      emptyClass: function(content) {
+        return !content ? 'hidden' : '';
+      },
+
+      propertiesAreEmpty: function() {
+        for (var i = 0; i < arguments.length; ++i) {
+          if (arguments[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+    })
+  </script>
+</dom-module>
