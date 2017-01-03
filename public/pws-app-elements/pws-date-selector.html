@@ -1,0 +1,60 @@
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="pws-behaviour.html">
+<script src="../bower_components/moment/moment.js" async></script>
+
+<dom-module id="pws-date-selector">
+  <template>
+    <style is="custom-style">
+      paper-dropdown-menu.date {
+        --paper-input-container-input: {
+          color: var(--paper-purple-50);
+        }
+        /* no underline */
+        --paper-input-container-underline: {
+          display: none;
+        };
+      }
+    </style>
+    <paper-dropdown-menu class="date" no-label-float disabled="[[disabled]]">
+      <paper-listbox class="dropdown-content" selected="0" on-iron-select="doStuff">
+        <template is="dom-repeat" attr-for-selected="date" items="[[weekdays]]" as="weekday">
+          <paper-item date="[[weekday.num]]">[[weekday.day]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-date-selector',
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      properties: {
+        disabled: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        weekdays: {
+          type: Array,
+          value: [
+            {num: moment().format('YYYYMMDD'), day: 'Today'},
+            {num: moment().add(1, 'd').format('YYYYMMDD'), day: 'Tomorrow'},
+            {num: moment().add(2, 'd').format('YYYYMMDD'), day: moment().add(2, 'd').format('ddd, Do MMM')},
+            {num: moment().add(3, 'd').format('YYYYMMDD'), day: moment().add(3, 'd').format('ddd, Do MMM')}
+          ]
+        }
+      },
+
+      doStuff: function(event) {
+        console.log('searchDate was', this.searchDate);
+        this.searchDate = Number.parseInt(event.target.selectedItem.date);
+        console.log('searchDate set to', this.searchDate);
+      }
+    });
+  </script>
+</dom-module>

@@ -32,6 +32,9 @@
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0.0",
     "paper-item": "PolymerElements/paper-item#^1.0.0",
     "paper-listbox": "polymerelements/paper-listbox#^1.0.0",
-    "paper-menu": "PolymerElements/paper-menu#^1.0.0"
+    "paper-menu": "PolymerElements/paper-menu#^1.0.0",
+    "paper-card": "PolymerElements/paper-card#^1.0.0",
+    "moment": "^2.17.1",
+    "paper-badge": "PolymerElements/paper-badge#^1.1.4"
   }
 }

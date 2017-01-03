@@ -97,6 +97,7 @@
       },
 
       open: function(shiftElement) {
+        // console.log('shift editor form open event fired');
         this._setOpened(true);
         this.__editedShiftElement = shiftElement;
         if (shiftElement) {
@@ -108,8 +109,15 @@
       },
 
       create: function() {
+        // console.log('pws-shift-editor: create event was fired. shift', this.shift);
         this._setOpened(true);
-        this.shift = { location: '', date: '', time: '', contactnumber: '', approved: false };
+        this.shift = {
+          location: this.shift.location,
+          date: this.shift.date,
+          time: this.shift.time,
+          contactnumber: '',
+          approved: false };
+        console.log(this.shift);  
         this.transitionInFrom(this.getBoundingClientRect());
       },
 

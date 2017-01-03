@@ -8,6 +8,11 @@
         editableShiftId: {
           type: String,
           notify: true
+        },
+
+        searchDate: {
+          type: Number,
+          value: 0
         }
       },
 
@@ -70,8 +75,6 @@
           return this.$.document.save(this.shiftsPath).then(function() {
             this.$.document.reset();
           }.bind(this));
-        } else {
-          console.log('not able to save');
         }
 
         return Promise.resolve();
