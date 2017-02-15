@@ -13,6 +13,19 @@
         user="{{user}}">
     </firebase-auth>
 
+    <pws-login
+        on-sign-in="signIn"
+        signed-in="[[signedIn]]"
+        disabled="[[!online]]">
+    </pws-login>
+
+    <firebase-query
+        app-name="pws"
+        path="/locations"
+        data="{{locations}}"
+        disabled="[[!signedIn]]">
+    </firebase-query>
+
     <firebase-document
         id="document"
         app-name="pws"
@@ -20,79 +33,115 @@
         data="{{editableShift}}">
     </firebase-document>
 
-    <!-- <firebase-query
-        app-name="pws"
-        path="/shifts/[[user.uid]]"
-        data="{{shifts}}">
-    </firebase-query> -->
-
     <firebase-query
         app-name="pws"
-        path="/locations"
-        data="{{locations}}">
+        path="/shifts"
+        order-by-child="user"
+        equal-to="[[user.uid]]"
+        data="{{usershifts}}">
     </firebase-query>
 
-    <pws-toolbar
-        signed-in="[[signedIn]]"
-        on-sign-out="signOut"></pws-toolbar>
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{_pageData}}"
+        tail="{{_subRoute}}"></app-route>
+    <app-route
+        route="{{_subRoute}}"
+        pattern="/:id"
+        data="{{_idData}}"></app-route>
 
-    <!-- <firebase-query
-        app-name="pws"
-        path="/shifts/[[searchDate]]"
-        data="{{shifts}}">
-    </firebase-query> -->
+    <app-header reveals>
+      <app-toolbar>
+        <paper-icon-button icon="menu" onclick="drawer.toggle()"></paper-icon-button>
+        <pws-toolbar id="pwstoolbar"
+            signed-in="[[signedIn]]" search-date="{{searchDate}}"
+            on-sign-out="signOut" style="width: 100%;"></pws-toolbar>
+      </app-toolbar>
+    </app-header>
+    <app-drawer id="drawer" swipe-open>
+      <paper-listbox
+          selected="{{_pageData.page}}"
+          attr-for-selected="name"
+          on-iron-activate="_drawerSelected">
+        <paper-item name="home">Home</paper-item>
+        <paper-item name="myshifts">My Shifts</paper-item>
+        <paper-item name="admin">Admin</paper-item>
+      </paper-listbox>
+    </app-drawer>
 
-    <pws-login
-        on-sign-in="signIn"
-        signed-in="[[signedIn]]"
-        disabled="[[!online]]">
-    </pws-login>
+    <iron-pages selected="[[_pageData.page]]" attr-for-selected="name">
+      <section name="home">
+        <pws-shift-editor
+            id="editor"
+            locations="[[locations]]"
+            shift="{{editableShift}}"
+            on-close="commitChange">
+        </pws-shift-editor>
 
-    <pws-shift-editor
-        id="editor"
-        locations="[[locations]]"
-        shift="{{editableShift}}"
-        on-close="commitChange"></pws-shift-editor>
+        <template is="dom-repeat" items="[[locations]]" as="location">
+          <firebase-query
+              app-name="pws"
+              path="/shifts"
+              order-by-child="date_location"
+              equal-to="[[_computeDateLocation(searchDate, location.$key)]]"
+              data="{{shifts}}">
+          <pws-location location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
+        </template>
+      </section>
 
-    <template is="dom-repeat" items="[[locations]]" as="location">
-      <paper-card class="location" heading="[[location.name]]" style="margin-top:4px; margin-bottom:4px;">
-        <div class="card-actions">
-          <p>Availability</p>
-          <div class="horizontal justified">
-            <paper-icon-button icon="icons:event"></paper-icon-button>
-            <div style="display:inline-block; border: 1px solid grey;">
-              <paper-button data-location-id$="[[location.$key]]" data-search-date$="[[searchDate]]" data-shift-time="7AM - 9AM" on-tap="createPrefilledShift">7AM - 9AM</paper-button>
-              <div style="text-align: center;">3</div>
-            </div>
-            <paper-button>9AM - 11AM</paper-button>
-            <paper-button>11AM - 1PM</paper-button>
-            <paper-button>1PM - 3PM</paper-button>
-            <paper-button>5PM - 7PM</paper-button>
-          </div>
-        </div>
-      </paper-card>
-    </template>
-        <!-- <div class="notes">
-          <template is="dom-repeat" items="[[shifts]]" as="note">
-            <pws-shift
-                id$="[[note.$key]]"
-                shift="[[note]]"
-                locations="[[locations]]"
-                on-tap="edit">
-            </pws-shift>
+      <section name="myshifts">
+        <template is="dom-repeat" items="[[usershifts]]" as="shift">
+          <template is="dom-if" if="[[!_isOlderShift(shift)]]">
+            <pws-shift id$="[[shift.$key]]" locations=[[locations]] shift="[[shift]]"></pws-shift>
           </template>
-        </div> -->
 
-    <paper-fab
-        icon="add"
-        on-tap="create"
-        disabled="[[!online]]"
-        aria-label="Book shift">
-    </paper-fab>
+        </template>
+        <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
+      </section>
+
+      <section name="admin">
+        <div>
+          Admin section
+        </div>
+        <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
+      </section>
+    </iron-pages>
   </template>
   <script>
     Polymer({
       is: 'pws-app',
+
+      properties: {
+        searchDate: {
+          type: Number
+        },
+
+        showDateSelector: {
+          type: Boolean,
+          computed: '_computeShowDateSelector(signedIn, route)',
+          notify: true
+        },
+
+        route: Object,
+        _subRoute: Object,
+        _subRoute: Object,
+        _idData: Object,
+        _pageData: Object,
+        filteredUserShifts: {
+          type: Array,
+          notify: true
+        }
+      },
+
+      attached: function() {
+        this.async(function() {
+          if (!this.route.path) {
+            this.set('route.path', '/home');
+          }
+        });
+      },
 
       behaviors: [Polymer.PWSAppBehaviour],
 
@@ -100,17 +149,7 @@
         this.$.auth.signInWithPopup();
       },
 
-      createPrefilledShift: function(event) {
-        console.log('dataset', event.target.dataset);
-        console.log('this.searchDate', this.searchDate);
-        this.$.editor.shift.location = event.target.dataset.locationId;
-        this.$.editor.shift.time = event.target.dataset.shiftTime;
-        this.$.editor.shift.date = this.searchDate;
-        this.create();
-      },
-
       get shiftsPath() {
-        // return '/shifts/' + this.user.uid;
         return '/shifts/';
       },
 
@@ -118,8 +157,31 @@
         return this.shiftsPath + '/' + shiftId;
       },
 
-      get isEditable() {
-        return this.online;
+      _computeDateLocation: function(date, location) {
+        return date + '_' + location;
+      },
+
+      _computeShowDateSelector: function(signedIn, route) {
+        return signedIn && route.path && route.path === '/home';
+      },
+
+      _drawerSelected: function() {
+        console.log(this._pageData.page);
+        if (!this.$.drawer.persistent) this.$.drawer.close();
+      },
+
+      _sortShifts: function(a, b) {
+        if (a.date > b.date) {
+          return -1;
+        }
+        if (a.date < b.date) {
+          return 1;
+        }
+        return 0;
+      },
+
+      _isOlderShift: function(shift) {
+        return Number(shift.date) < Number(this.weekdays[0].num);
       }
     });
   </script>

@@ -7,7 +7,7 @@
     <style>
       :host {
         position: absolute;
-        top: 46px;
+        top: 0px;
         left: 0;
         right: 0;
         bottom: 0;
@@ -51,6 +51,10 @@
           reflectToAttribute: true,
           value: false
         }
+      },
+
+      attached: function() {
+        console.log(this.$$('.loading'));
       },
 
       signIn: function() {

@@ -2,7 +2,6 @@
   <template>
     <style>
       :host {
-        display: block;
         background-color: #e8e8e8;
         height: 100vh;
         @apply(--paper-font-common-base);
@@ -10,6 +9,14 @@
         --paper-fab-background: var(--paper-teal-500);
       }
 
+      .card {
+        margin: 12px;
+        padding: 16px;
+        color: #757575;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
 
       .shifts {
         position: relative;
@@ -29,13 +36,18 @@
         right: 1em;
       }
 
+      app-header.pws-app {
+        background-color: #9c27b0;
+        color: white;
+      }
+
       @media (min-width: 640px) {
         pws-location {
           max-width: 320px;
           margin: 0 0.5em 1em;
         }
 
-        .notes {
+        .shifts {
           @apply(--layout-horizontal);
           @apply(--layout-wrap);
           justify-content: center;

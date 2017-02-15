@@ -61,10 +61,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
     </style>
-    <iron-icon icon="bookmark"></iron-icon>
-    <pws-date-selector id="dateSelector" disabled="[[!signedIn]]"></pws-date-selector>
-    <h1>PWS</h1>
-    <iron-icon icon="cloud" hidden$="[[!online]]"></iron-icon>
+    <!-- <iron-icon icon="bookmark"></iron-icon> -->
+    <pws-date-selector hidden$="[[!signedIn]]" search-date="{{searchDate}}"></pws-date-selector>
+    <!-- <h1>PWS</h1> -->
+    <!-- <iron-icon icon="cloud" hidden$="[[!online]]"></iron-icon> -->
     <iron-icon icon="cloud-off" hidden$="[[online]]"></iron-icon>
     <paper-icon-button
         icon="[[computeLockIcon(signedIn)]]"
@@ -85,6 +85,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           notify: true,
           value: false
+        },
+
+        searchDate: {
+          type: Number,
+          notify: true
         }
       },
 

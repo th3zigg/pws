@@ -3,7 +3,6 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="pws-behaviour.html">
-<script src="../bower_components/moment/moment.js" async></script>
 
 <dom-module id="pws-date-selector">
   <template>
@@ -18,8 +17,8 @@
         };
       }
     </style>
-    <paper-dropdown-menu class="date" no-label-float disabled="[[disabled]]">
-      <paper-listbox class="dropdown-content" selected="0" on-iron-select="doStuff">
+    <paper-dropdown-menu id="dateSelector" class="date" no-label-float disabled="[[disabled]]">
+      <paper-listbox class="dropdown-content" selected="0" on-iron-select="_updateSearchDate">
         <template is="dom-repeat" attr-for-selected="date" items="[[weekdays]]" as="weekday">
           <paper-item date="[[weekday.num]]">[[weekday.day]]</paper-item>
         </template>
@@ -39,21 +38,14 @@
           value: false
         },
 
-        weekdays: {
-          type: Array,
-          value: [
-            {num: moment().format('YYYYMMDD'), day: 'Today'},
-            {num: moment().add(1, 'd').format('YYYYMMDD'), day: 'Tomorrow'},
-            {num: moment().add(2, 'd').format('YYYYMMDD'), day: moment().add(2, 'd').format('ddd, Do MMM')},
-            {num: moment().add(3, 'd').format('YYYYMMDD'), day: moment().add(3, 'd').format('ddd, Do MMM')}
-          ]
+        searchDate: {
+          type: Number,
+          notify: true
         }
       },
 
-      doStuff: function(event) {
-        console.log('searchDate was', this.searchDate);
+      _updateSearchDate: function(event) {
         this.searchDate = Number.parseInt(event.target.selectedItem.date);
-        console.log('searchDate set to', this.searchDate);
       }
     });
   </script>

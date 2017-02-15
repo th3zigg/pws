@@ -6,8 +6,39 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
     <link rel="import" href="bower_components/polymerfire/firebase-app.html">
     <link rel="import" href="pws-app.html">
+    <style>
+      .loading {
+        position: absolute;
+        top: 0px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: purple;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+        color: white;
+        vertical-align: middle;
+        text-transform: none;
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
+    <script>
+      (function() {
+        if ('registerElement' in document
+            && 'import' in document.createElement('link')
+            && 'content' in document.createElement('template')) {
+          // platform is good!
+        } else {
+          // polyfill the platform!
+          var e = document.createElement('script');
+          e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
+          document.body.appendChild(e);
+        }
+      })();
+    </script>
+
     <firebase-app
         name="pws"
         api-key="AIzaSyA1A3sn12PeGzjF110Yd9T4Xuw5ABfApuI"
@@ -15,6 +46,6 @@
         database-url="https://pubhub1ri.firebaseio.com">
     </firebase-app>
 
-    <pws-app></pws-app>
+    <pws-app unresolved>Loading app ...</pws-app>
   </body>
 </html>
