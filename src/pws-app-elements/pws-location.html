@@ -1,5 +1,5 @@
-<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="pws-location-time-button.html">
 <link rel="import" href="pws-behaviour.html">
 <link rel="import" href="shared-styles.html">
@@ -44,14 +44,16 @@
         shiftTimes: {
           type: Array,
           readOnly: true,
-          value: [
-            {startTime: 7, displayName: '7AM - 9AM'},
-            {startTime: 9, displayName: '9AM - 11AM'},
-            {startTime: 11, displayName: '11AM - 1PM'},
-            {startTime: 13, displayName: '1PM - 3PM'},
-            {startTime: 15, displayName: '3PM - 5PM'},
-            {startTime: 17, displayName: '5PM - 7PM'},
-          ]
+          value: function() {
+            return [
+              {startTime: 7, displayName: '7AM - 9AM'},
+              {startTime: 9, displayName: '9AM - 11AM'},
+              {startTime: 11, displayName: '11AM - 1PM'},
+              {startTime: 13, displayName: '1PM - 3PM'},
+              {startTime: 15, displayName: '3PM - 5PM'},
+              {startTime: 17, displayName: '5PM - 7PM'}
+            ];
+          }
         }
       }
     });

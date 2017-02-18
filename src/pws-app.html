@@ -1,9 +1,37 @@
-<link rel="import" href="pws-app-elements/pws-elements.html">
-<link rel="import" href="bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="pws-app-elements/pws-login.html">
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<!-- <link rel="import" href="pws-app-elements/pws-elements.html"> -->
+<link rel="import" href="pws-app-elements/pws-toolbar.html">
+<link rel="import" href="pws-app-elements/pws-location.html">
+<link rel="import" href="pws-app-elements/pws-shift-editor.html">
+<link rel="import" href="pws-app-elements/pws-shift.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 
 <dom-module id="pws-app">
   <template>
     <style include="pws-app-shared-styles"></style>
+
+    <firebase-app
+        name="pws"
+        api-key="AIzaSyA1A3sn12PeGzjF110Yd9T4Xuw5ABfApuI"
+        auth-domain="pubhub1ri.firebaseapp.com"
+        database-url="https://pubhub1ri.firebaseio.com">
+    </firebase-app>
 
     <firebase-auth
         id="auth"
@@ -32,6 +60,7 @@
         path="[[editableShiftId]]"
         data="{{editableShift}}">
     </firebase-document>
+    <paper-toast id="toast" text="Your shift has been booked"></paper-toast>
 
     <firebase-query
         app-name="pws"
@@ -58,6 +87,7 @@
         <pws-toolbar id="pwstoolbar"
             signed-in="[[signedIn]]" search-date="{{searchDate}}"
             on-sign-out="signOut" style="width: 100%;"></pws-toolbar>
+        <span>[[user.displayName]]</span>
       </app-toolbar>
     </app-header>
     <app-drawer id="drawer" swipe-open>
@@ -73,13 +103,6 @@
 
     <iron-pages selected="[[_pageData.page]]" attr-for-selected="name">
       <section name="home">
-        <pws-shift-editor
-            id="editor"
-            locations="[[locations]]"
-            shift="{{editableShift}}"
-            on-close="commitChange">
-        </pws-shift-editor>
-
         <template is="dom-repeat" items="[[locations]]" as="location">
           <firebase-query
               app-name="pws"
@@ -89,14 +112,20 @@
               data="{{shifts}}">
           <pws-location location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
         </template>
+        <pws-shift-editor
+            id="editor"
+            locations="[[locations]]"
+            shift="{{editableShift}}"
+            on-close="commitChange">
+        </pws-shift-editor>
       </section>
 
       <section name="myshifts">
+        <div>Your shifts</div>
         <template is="dom-repeat" items="[[usershifts]]" as="shift">
           <template is="dom-if" if="[[!_isOlderShift(shift)]]">
             <pws-shift id$="[[shift.$key]]" locations=[[locations]] shift="[[shift]]"></pws-shift>
           </template>
-
         </template>
         <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
       </section>

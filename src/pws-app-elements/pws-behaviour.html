@@ -1,5 +1,5 @@
-<link rel="import" href="../bower_components/app-storage/app-network-status-behavior.html">
-<script src="../bower_components/moment/moment.js" async></script>
+<link rel="import" href="/bower_components/app-storage/app-network-status-behavior.html">
+<script src="/bower_components/moment/moment.js" async></script>
 
 <script>
   (function() {
@@ -46,9 +46,9 @@
       setSearchDate: function(date) {
         this.searchDate = date;
       },
-      
+
       getPrintableDate: function(date) {
-        let weekday = this.weekdays.find(el => el.num == date);
+        var weekday = this.weekdays.find(function(el) {return Number(el.num) === Number(date);});
         return (weekday) ? weekday.day : date;
       },
 
@@ -99,11 +99,10 @@
           this.editableShift.user = this.user.uid;
           this.editableShift.date_location = this.editableShift.date + '_' + this.editableShift.location;
 
-          // return this.$.document.save(this.shiftsPath + '/' + this.editableShift.location + '/' + this.editableShift.date).then(function() {
-          //   this.$.document.reset();
-          // }.bind(this));
           return this.$.document.save(this.shiftsPath).then(function() {
             this.$.document.reset();
+            this.$.toast.open();
+            window.location = '/#/myshifts';
           }.bind(this));
         }
 
@@ -125,7 +124,7 @@
       },
 
       createPrefilledShift: function(event) {
-        let editor = document.querySelector('#editor');
+        var editor = document.querySelector('#editor');
         editor.shift.location = event.target.dataset.locationId;
         editor.shift.time = event.target.dataset.shiftTime;
         editor.shift.date = this.searchDate;

@@ -1,5 +1,4 @@
-public/bower_components
-
+bower_components/
 build/
 
 .DS_Store

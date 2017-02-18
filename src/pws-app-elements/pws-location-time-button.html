@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="pws-behaviour.html">
 
 <dom-module id="pws-location-time-button">
@@ -19,7 +19,7 @@
       }
     </style>
 
-    <div class="shifttime" id="123x">
+    <div class="shifttime">
       <paper-button class="time"
           data-location-id$="[[location.$key]]"
           data-shift-time$="[[shiftTime.displayName]]"
@@ -45,6 +45,8 @@
           type: Object
         },
 
+        shiftTime: Object,
+
         shiftsNumber: {
           type: Number,
           value: 0
@@ -64,7 +66,8 @@
 
       _dataChanged: function(newData, oldData) {
         if (newData) {
-          this.shiftsNumber = newData.indexSplices[0].object.filter(shift => shift.time === this.shiftTime.displayName && shift.location === this.location.$key).length;
+          var _this = this;
+          this.shiftsNumber = newData.indexSplices[0].object.filter(function(shift) {return shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;}).length;
         } else {
           this.shiftsNumber = 0;
         }
@@ -81,8 +84,8 @@
       _toggleTimeButton: function() {
         var button = this.$$('paper-button.time');
 
-        let dateNow = moment().format('YYYYMMDD');
-        let hourNow = moment().format('H');
+        var dateNow = moment().format('YYYYMMDD');
+        var hourNow = moment().format('H');
         if (button.dataset.shiftDate === dateNow && Number(hourNow) >= Number(this.shiftTime.startTime)) {
           button.disabled = true;
         } else {

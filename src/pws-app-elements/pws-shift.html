@@ -1,13 +1,16 @@
-<link rel="import" href="../bower_components/paper-styles/shadow.html">
-<link rel="import" href="../bower_components/paper-styles/typography.html">
-<link rel="import" href="../bower_components/iron-input/iron-input.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="pws-date-selector.html">
+<link rel="import" href="../../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
 <dom-module id="pws-shift">
   <template>
@@ -38,6 +41,13 @@
           background-color: #fff;
           box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
         }
+
+        p {
+          margin: 0;
+          font-family: 'Roboto Slab', Times New Roman, serif;
+          font-size: 0.9em;
+          white-space: pre-wrap;
+        }
       }
 
       iron-autogrow-textarea {
@@ -63,13 +73,6 @@
 
       h1:not(.hidden)+p {
         margin-top: 1em;
-      }
-
-      p {
-        margin: 0;
-        font-family: 'Roboto Slab', Times New Roman, serif;
-        font-size: 0.9em;
-        white-space: pre-wrap;
       }
 
       .placeholder:after {
@@ -111,10 +114,8 @@
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
-      <paper-input name="date" label="Date" value="{{getPrintableDate(shift.date)}}" required></paper-input>
-      <!-- <pws-date-selector search-date="[[shift.date]]"></pws-date-selector> -->
-      <paper-input name="time" label="Time" value="{{shift.time}}" required></paper-input>
-      <paper-input name="contactnumber" label="Contact Number" type="number" value="{{shift.contactnumber}}" required></paper-input>
+      <paper-input name="date" label="Date" value="{{getPrintableDate(shift.date)}}" readonly></paper-input>
+      <paper-input name="time" label="Time" value="{{shift.time}}" readonly></paper-input>
 
     </template>
     <template is="dom-if" if="[[!editable]]">
@@ -127,12 +128,25 @@
           <iron-icon icon="schedule" item-icon></iron-icon>
           <span style="padding-left: 10px;"><span>[[getPrintableDate(shift.date)]]</span> <span>[[shift.time]]</spanstyle>
         </div>
-        <!-- <div style="padding: 10px;">
-          <iron-icon icon="perm-identity"></iron-icon>
-          <span style="padding-left: 10px;">[[shift.publishername]]</span>
-        </div> -->
+        <paper-icon-button icon="delete" title="delete" on-tap="openDialog"></paper-icon-button>
       </div>
+
+      <paper-dialog id="dialog">
+        <p>Delete booking?</p>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="deleteShift">Delete</paper-button>
+        </div>
+      </paper-dialog>
     </template>
+
+    <paper-toast id="deletedToast" text="Your booking has been deleted"></paper-toast>
+
+    <firebase-document
+        id="myshift"
+        app-name="pws"
+        path="[[shiftPath]]">
+    </firebase-document>
   </template>
   <script>
     Polymer({
@@ -150,15 +164,34 @@
         lastUpdated: {
           type: Number,
           value: 0
+        },
+
+        shiftPath: {
+          type: String,
+          computed: '_computeShiftPath(shift)'
         }
       },
 
+      deleteShift: function() {
+        this.$.myshift.destroy();
+      },
+
       getLocationName: function(locationId) {
-        var location = this.locations.find(element => element.$key === locationId);
+        var location = this.locations.find(function(element) {return element.$key === locationId;});
         if (location) {
           return location.name;
         }
         // return locationId;
+      },
+
+      _computeShiftPath: function(shift) {
+        if (shift) {
+          return '/shifts/' + shift.$key;
+        }
+      },
+
+      openDialog: function() {
+        this.$$('#dialog').open();
       },
 
       emptyClass: function(content) {
