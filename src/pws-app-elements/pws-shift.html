@@ -1,0 +1,211 @@
+<link rel="import" href="../../bower_components/paper-styles/shadow.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="pws-date-selector.html">
+<link rel="import" href="../../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="pws-shift">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin-top: 10px;
+        box-sizing: border-box;
+        background-color: #fafafa;
+        color: #212121;
+        padding: 1em;
+        @apply(--paper-font-common-base);
+        @apply(--shadow-elevation-2dp);
+        border-radius: 2px;
+
+        --iron-autogrow-textarea: {
+          margin: 0;
+          padding: 0;
+          font-family: 'Roboto Slab', Times New Roman, serif;
+          white-space: pre-wrap;
+        }
+
+        .card {
+          margin: 12px;
+          padding: 16px;
+          color: #757575;
+          border-radius: 5px;
+          background-color: #fff;
+          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+          margin: 0;
+          font-family: 'Roboto Slab', Times New Roman, serif;
+          font-size: 0.9em;
+          white-space: pre-wrap;
+        }
+      }
+
+      iron-autogrow-textarea {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        border: 0;
+        margin: 1em 0 0;
+        padding: 0;
+        font-size: 0.9em;
+        font-family: 'Roboto Slab', Times New Roman, serif;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      h1 {
+        font-size: 1.15em;
+        margin: 0;
+        white-space: pre-wrap;
+      }
+
+      h1:not(.hidden)+p {
+        margin-top: 1em;
+      }
+
+      .placeholder:after {
+        content: 'Tap to edit';
+        opacity: 0.5;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .empty {
+        font-style: italic;
+        color: #737373;
+        line-height: 0;
+        pointer-events: none;
+      }
+
+      input {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+        outline: none;
+        border: 0;
+        background: transparent;
+        white-space: pre-wrap;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-size: 1.15em;
+        font-weight: bold;
+        color: #212121;
+      }
+    </style>
+    <template is="dom-if" if="[[editable]]">
+      <paper-dropdown-menu label="Location">
+        <paper-listbox class="dropdown-content" attr-for-selected="locationid" selected="{{shift.location}}">
+          <template is="dom-repeat" items="[[locations]]" as="loc">
+            <paper-item locationid="[[loc.$key]]">[[loc.name]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <paper-input name="date" label="Date" value="{{getPrintableDate(shift.date)}}" readonly></paper-input>
+      <paper-input name="time" label="Time" value="{{shift.time}}" readonly></paper-input>
+
+    </template>
+    <template is="dom-if" if="[[!editable]]">
+      <div class="card">
+        <div style="padding: 10px;">
+          <iron-icon icon="room" item-icon></iron-icon>
+          <span style="padding-left: 10px;">[[getLocationName(shift.location)]]</span>
+        </div>
+        <div style="padding: 10px;">
+          <iron-icon icon="schedule" item-icon></iron-icon>
+          <span style="padding-left: 10px;"><span>[[getPrintableDate(shift.date)]]</span> <span>[[shift.time]]</spanstyle>
+        </div>
+        <paper-icon-button icon="delete" title="delete" on-tap="openDialog"></paper-icon-button>
+      </div>
+
+      <paper-dialog id="dialog">
+        <p>Delete booking?</p>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus on-tap="deleteShift">Delete</paper-button>
+        </div>
+      </paper-dialog>
+    </template>
+
+    <paper-toast id="deletedToast" text="Your booking has been deleted"></paper-toast>
+
+    <firebase-document
+        id="myshift"
+        app-name="pws"
+        path="[[shiftPath]]">
+    </firebase-document>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-shift',
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      properties: {
+        editable: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        lastUpdated: {
+          type: Number,
+          value: 0
+        },
+
+        shiftPath: {
+          type: String,
+          computed: '_computeShiftPath(shift)'
+        }
+      },
+
+      deleteShift: function() {
+        this.$.myshift.destroy();
+      },
+
+      getLocationName: function(locationId) {
+        var location = this.locations.find(function(element) {return element.$key === locationId;});
+        if (location) {
+          return location.name;
+        }
+        // return locationId;
+      },
+
+      _computeShiftPath: function(shift) {
+        if (shift) {
+          return '/shifts/' + shift.$key;
+        }
+      },
+
+      openDialog: function() {
+        this.$$('#dialog').open();
+      },
+
+      emptyClass: function(content) {
+        return !content ? 'hidden' : '';
+      },
+
+      propertiesAreEmpty: function() {
+        for (var i = 0; i < arguments.length; ++i) {
+          if (arguments[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+    })
+  </script>
+</dom-module>

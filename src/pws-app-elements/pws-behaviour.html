@@ -1,4 +1,6 @@
-<link rel="import" href="../bower_components/app-storage/app-network-status-behavior.html">
+<link rel="import" href="/bower_components/app-storage/app-network-status-behavior.html">
+<script src="/bower_components/moment/moment.js" async></script>
+
 <script>
   (function() {
     'use strict';
@@ -12,7 +14,20 @@
 
         searchDate: {
           type: Number,
-          value: 0
+          notify: true
+        },
+
+        weekdays: {
+          type: Array,
+          value: [
+            {num: moment().format('YYYYMMDD'), day: 'Today'},
+            {num: moment().add(1, 'd').format('YYYYMMDD'), day: 'Tomorrow'},
+            {num: moment().add(2, 'd').format('YYYYMMDD'), day: moment().add(2, 'd').format('ddd, Do MMM')},
+            {num: moment().add(3, 'd').format('YYYYMMDD'), day: moment().add(3, 'd').format('ddd, Do MMM')},
+            {num: moment().add(4, 'd').format('YYYYMMDD'), day: moment().add(4, 'd').format('ddd, Do MMM')},
+            {num: moment().add(5, 'd').format('YYYYMMDD'), day: moment().add(5, 'd').format('ddd, Do MMM')},
+            {num: moment().add(6, 'd').format('YYYYMMDD'), day: moment().add(6, 'd').format('ddd, Do MMM')}
+          ]
         }
       },
 
@@ -26,6 +41,15 @@
 
       toEditableId: function(shiftId) {
         return shiftId;
+      },
+
+      setSearchDate: function(date) {
+        this.searchDate = date;
+      },
+
+      getPrintableDate: function(date) {
+        var weekday = this.weekdays.find(function(el) {return Number(el.num) === Number(date);});
+        return (weekday) ? weekday.day : date;
       },
 
       edit: function(event) {
@@ -72,8 +96,13 @@
         if (this.$.document.isNew &&
             (this.editableShift.location && this.editableShift.date && this.editableShift.date)) {
           this.editableShift.publishername = this.user.displayName;
+          this.editableShift.user = this.user.uid;
+          this.editableShift.date_location = this.editableShift.date + '_' + this.editableShift.location;
+
           return this.$.document.save(this.shiftsPath).then(function() {
             this.$.document.reset();
+            this.$.toast.open();
+            window.location = '/#/myshifts';
           }.bind(this));
         }
 
@@ -92,6 +121,14 @@
         if (this.$.auth) {
           this.$.auth.signOut();
         }
+      },
+
+      createPrefilledShift: function(event) {
+        var editor = document.querySelector('#editor');
+        editor.shift.location = event.target.dataset.locationId;
+        editor.shift.time = event.target.dataset.shiftTime;
+        editor.shift.date = this.searchDate;
+        editor.create();
       }
     };
 

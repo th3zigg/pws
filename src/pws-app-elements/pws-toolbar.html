@@ -7,11 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/app-storage/app-network-status-behavior.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/app-storage/app-network-status-behavior.html">
+<link rel="import" href="../pws-app-elements/pws-date-selector.html">
+
 <dom-module id="pws-toolbar">
   <template>
     <style>
@@ -24,6 +26,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         --paper-icon-button-disabled: {
           color: var(--paper-purple-50);
         };
+      }
+
+      /*paper-item.date {
+        --paper-item-selected: {
+          color: var(--paper-purple-50);
+        };
+        --paper-item-selected-before: {
+          opacity: 0;
+        };
+      }*/
+      .input-content.paper-input-container input {
+        color: white;
       }
 
       h1 {
@@ -47,10 +61,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
     </style>
-    <iron-icon icon="bookmark"></iron-icon>
-    <h1>PWS</h1>
-    <iron-icon icon="cloud" hidden$="[[!online]]"></iron-icon>
+    <!-- <iron-icon icon="bookmark"></iron-icon> -->
+    <pws-date-selector hidden$="[[!signedIn]]" search-date="{{searchDate}}"></pws-date-selector>
+    <!-- <h1>PWS</h1> -->
+    <!-- <iron-icon icon="cloud" hidden$="[[!online]]"></iron-icon> -->
     <iron-icon icon="cloud-off" hidden$="[[online]]"></iron-icon>
+
     <paper-icon-button
         icon="[[computeLockIcon(signedIn)]]"
         disabled="[[!signedIn]]"
@@ -70,6 +86,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           notify: true,
           value: false
+        },
+
+        searchDate: {
+          type: Number,
+          notify: true
         }
       },
 

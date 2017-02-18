@@ -1,0 +1,101 @@
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="pws-behaviour.html">
+
+<dom-module id="pws-location-time-button">
+  <template>
+    <style is="custom-style">
+      .shifttime {
+        display: inline-block;
+        border: 1px solid grey;
+      }
+
+      .numShifts {
+        text-align: center;
+      }
+
+      paper-button.time {
+        margin: 0px;
+        padding: 5px;
+      }
+    </style>
+
+    <div class="shifttime">
+      <paper-button class="time"
+          data-location-id$="[[location.$key]]"
+          data-shift-time$="[[shiftTime.displayName]]"
+          data-shift-date$="[[searchDate]]"
+          on-tap="createPrefilledShift">[[shiftTime.displayName]]</paper-button>
+      <div class="numShifts">[[_computeAvailableShiftsDisplayName(shiftsAvailable)]]</div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-location-time-button',
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      properties: {
+        shifts: {
+          type: Array,
+          notify: true,
+          observer: '_toggleTimeButton'
+        },
+
+        location: {
+          type: Object
+        },
+
+        shiftTime: Object,
+
+        shiftsNumber: {
+          type: Number,
+          value: 0
+        },
+
+        shiftsAvailable: {
+          type: Number,
+          notify: true,
+          computed: '_computeShiftsAvailable(shiftsNumber, location)',
+          observer: '_toggleTimeButton'
+        }
+      },
+
+      observers: [
+        '_dataChanged(shifts.splices)'
+      ],
+
+      _dataChanged: function(newData, oldData) {
+        if (newData) {
+          var _this = this;
+          this.shiftsNumber = newData.indexSplices[0].object.filter(function(shift) {return shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;}).length;
+        } else {
+          this.shiftsNumber = 0;
+        }
+      },
+
+      _computeDisabled: function() {
+        return this.shiftsAvailable == 0;
+      },
+
+      _computeShiftsAvailable: function(shiftsNumber, location) {
+        return location.maxPersons - shiftsNumber;
+      },
+
+      _toggleTimeButton: function() {
+        var button = this.$$('paper-button.time');
+
+        var dateNow = moment().format('YYYYMMDD');
+        var hourNow = moment().format('H');
+        if (button.dataset.shiftDate === dateNow && Number(hourNow) >= Number(this.shiftTime.startTime)) {
+          button.disabled = true;
+        } else {
+          button.disabled = (this.shiftsAvailable === 0);
+        }
+      },
+
+      _computeAvailableShiftsDisplayName: function(shiftsAvailable) {
+        return (shiftsAvailable === 0) ? 'Full' : shiftsAvailable;
+      }
+    });
+  </script>
+</dom-module>

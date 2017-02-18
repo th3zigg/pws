@@ -1,0 +1,217 @@
+<link rel="import" href="pws-app-elements/pws-login.html">
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/polymerfire/polymerfire.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<!-- <link rel="import" href="pws-app-elements/pws-elements.html"> -->
+<link rel="import" href="pws-app-elements/pws-toolbar.html">
+<link rel="import" href="pws-app-elements/pws-location.html">
+<link rel="import" href="pws-app-elements/pws-shift-editor.html">
+<link rel="import" href="pws-app-elements/pws-shift.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<dom-module id="pws-app">
+  <template>
+    <style include="pws-app-shared-styles"></style>
+
+    <firebase-app
+        name="pws"
+        api-key="AIzaSyA1A3sn12PeGzjF110Yd9T4Xuw5ABfApuI"
+        auth-domain="pubhub1ri.firebaseapp.com"
+        database-url="https://pubhub1ri.firebaseio.com">
+    </firebase-app>
+
+    <firebase-auth
+        id="auth"
+        app-name="pws"
+        provider="google"
+        signed-in="{{signedIn}}"
+        user="{{user}}">
+    </firebase-auth>
+
+    <pws-login
+        on-sign-in="signIn"
+        signed-in="[[signedIn]]"
+        disabled="[[!online]]">
+    </pws-login>
+
+    <firebase-query
+        app-name="pws"
+        path="/locations"
+        data="{{locations}}"
+        disabled="[[!signedIn]]">
+    </firebase-query>
+
+    <firebase-document
+        id="document"
+        app-name="pws"
+        path="[[editableShiftId]]"
+        data="{{editableShift}}">
+    </firebase-document>
+    <paper-toast id="toast" text="Your shift has been booked"></paper-toast>
+
+    <firebase-query
+        app-name="pws"
+        path="/shifts"
+        order-by-child="user"
+        equal-to="[[user.uid]]"
+        data="{{usershifts}}">
+    </firebase-query>
+
+    <app-location route="{{route}}" use-hash-as-path></app-location>
+    <app-route
+        route="{{route}}"
+        pattern="/:page"
+        data="{{_pageData}}"
+        tail="{{_subRoute}}"></app-route>
+    <app-route
+        route="{{_subRoute}}"
+        pattern="/:id"
+        data="{{_idData}}"></app-route>
+
+    <app-header reveals>
+      <app-toolbar>
+        <paper-icon-button icon="menu" onclick="drawer.toggle()"></paper-icon-button>
+        <pws-toolbar id="pwstoolbar"
+            signed-in="[[signedIn]]" search-date="{{searchDate}}"
+            on-sign-out="signOut" style="width: 100%;"></pws-toolbar>
+        <span>[[user.displayName]]</span>
+      </app-toolbar>
+    </app-header>
+    <app-drawer id="drawer" swipe-open>
+      <paper-listbox
+          selected="{{_pageData.page}}"
+          attr-for-selected="name"
+          on-iron-activate="_drawerSelected">
+        <paper-item name="home">Home</paper-item>
+        <paper-item name="myshifts">My Shifts</paper-item>
+        <paper-item name="admin">Admin</paper-item>
+      </paper-listbox>
+    </app-drawer>
+
+    <iron-pages selected="[[_pageData.page]]" attr-for-selected="name">
+      <section name="home">
+        <template is="dom-repeat" items="[[locations]]" as="location">
+          <firebase-query
+              app-name="pws"
+              path="/shifts"
+              order-by-child="date_location"
+              equal-to="[[_computeDateLocation(searchDate, location.$key)]]"
+              data="{{shifts}}">
+          <pws-location location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
+        </template>
+        <pws-shift-editor
+            id="editor"
+            locations="[[locations]]"
+            shift="{{editableShift}}"
+            on-close="commitChange">
+        </pws-shift-editor>
+      </section>
+
+      <section name="myshifts">
+        <div>Your shifts</div>
+        <template is="dom-repeat" items="[[usershifts]]" as="shift">
+          <template is="dom-if" if="[[!_isOlderShift(shift)]]">
+            <pws-shift id$="[[shift.$key]]" locations=[[locations]] shift="[[shift]]"></pws-shift>
+          </template>
+        </template>
+        <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
+      </section>
+
+      <section name="admin">
+        <div>
+          Admin section
+        </div>
+        <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
+      </section>
+    </iron-pages>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-app',
+
+      properties: {
+        searchDate: {
+          type: Number
+        },
+
+        showDateSelector: {
+          type: Boolean,
+          computed: '_computeShowDateSelector(signedIn, route)',
+          notify: true
+        },
+
+        route: Object,
+        _subRoute: Object,
+        _subRoute: Object,
+        _idData: Object,
+        _pageData: Object,
+        filteredUserShifts: {
+          type: Array,
+          notify: true
+        }
+      },
+
+      attached: function() {
+        this.async(function() {
+          if (!this.route.path) {
+            this.set('route.path', '/home');
+          }
+        });
+      },
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      signIn: function() {
+        this.$.auth.signInWithPopup();
+      },
+
+      get shiftsPath() {
+        return '/shifts/';
+      },
+
+      toEditableId: function(shiftId) {
+        return this.shiftsPath + '/' + shiftId;
+      },
+
+      _computeDateLocation: function(date, location) {
+        return date + '_' + location;
+      },
+
+      _computeShowDateSelector: function(signedIn, route) {
+        return signedIn && route.path && route.path === '/home';
+      },
+
+      _drawerSelected: function() {
+        console.log(this._pageData.page);
+        if (!this.$.drawer.persistent) this.$.drawer.close();
+      },
+
+      _sortShifts: function(a, b) {
+        if (a.date > b.date) {
+          return -1;
+        }
+        if (a.date < b.date) {
+          return 1;
+        }
+        return 0;
+      },
+
+      _isOlderShift: function(shift) {
+        return Number(shift.date) < Number(this.weekdays[0].num);
+      }
+    });
+  </script>
+</dom-module>

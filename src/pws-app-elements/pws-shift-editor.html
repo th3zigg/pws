@@ -1,6 +1,6 @@
-<link rel="import" href="../bower_components/paper-styles/color.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <dom-module id="pws-shift-editor">
   <template>
@@ -97,7 +97,6 @@
       },
 
       open: function(shiftElement) {
-        // console.log('shift editor form open event fired');
         this._setOpened(true);
         this.__editedShiftElement = shiftElement;
         if (shiftElement) {
@@ -109,15 +108,14 @@
       },
 
       create: function() {
-        // console.log('pws-shift-editor: create event was fired. shift', this.shift);
         this._setOpened(true);
         this.shift = {
           location: this.shift.location,
           date: this.shift.date,
           time: this.shift.time,
           contactnumber: '',
-          approved: false };
-        console.log(this.shift);  
+          approved: false
+        };
         this.transitionInFrom(this.getBoundingClientRect());
       },
 

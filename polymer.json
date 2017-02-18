@@ -1,0 +1,18 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/pws-app.html",
+  "fragments": [
+    "src/pws-app-elements/pws-login.html"
+  ],
+  "sourceGlobs": [
+   "src/**/*",
+   "bower.json",
+   "index.html",
+   "database.rules.json",
+   "firebase.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+  ]
+}

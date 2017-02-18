@@ -1,0 +1,52 @@
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="pws-behaviour.html">
+
+<dom-module id="pws-date-selector">
+  <template>
+    <style is="custom-style">
+      paper-dropdown-menu.date {
+        --paper-input-container-input: {
+          color: var(--paper-purple-50);
+        }
+        /* no underline */
+        --paper-input-container-underline: {
+          display: none;
+        };
+      }
+    </style>
+    <paper-dropdown-menu id="dateSelector" class="date" no-label-float disabled="[[disabled]]">
+      <paper-listbox class="dropdown-content" selected="0" on-iron-select="_updateSearchDate">
+        <template is="dom-repeat" attr-for-selected="date" items="[[weekdays]]" as="weekday">
+          <paper-item date="[[weekday.num]]">[[weekday.day]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-date-selector',
+
+      behaviors: [Polymer.PWSAppBehaviour],
+
+      properties: {
+        disabled: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        searchDate: {
+          type: Number,
+          notify: true
+        }
+      },
+
+      _updateSearchDate: function(event) {
+        this.searchDate = Number.parseInt(event.target.selectedItem.date);
+      }
+    });
+  </script>
+</dom-module>
