@@ -91,19 +91,8 @@
         pointer-events: none;
       }
 
-      input {
-        display: block;
-        box-sizing: border-box;
-        width: 100%;
-        margin: 0;
-        outline: none;
-        border: 0;
-        background: transparent;
-        white-space: pre-wrap;
-        font-family: 'Roboto', 'Noto', sans-serif;
-        font-size: 1.15em;
-        font-weight: bold;
-        color: #212121;
+      paper-dialog {
+        border-radius: 2px;
       }
     </style>
     <template is="dom-if" if="[[editable]]">
@@ -131,8 +120,9 @@
         <paper-icon-button icon="delete" title="delete" on-tap="openDialog"></paper-icon-button>
       </div>
 
-      <paper-dialog id="dialog">
-        <p>Delete booking?</p>
+      <paper-dialog id="dialog" modal>
+        <h2>Delete booking?</h2>
+        <p>Delete this booking at [[getLocationName(shift.location)]], [[getPrintableDate(shift.date)]] at [[shift.time]]</p>
         <div class="buttons">
           <paper-button dialog-dismiss>Cancel</paper-button>
           <paper-button dialog-confirm autofocus on-tap="deleteShift">Delete</paper-button>
