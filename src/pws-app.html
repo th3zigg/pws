@@ -14,13 +14,11 @@
 
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 
-<!-- <link rel="import" href="pws-app-elements/pws-elements.html"> -->
 <link rel="import" href="pws-app-elements/pws-toolbar.html">
 <link rel="import" href="pws-app-elements/pws-location.html">
-<link rel="import" href="pws-app-elements/pws-shift-editor.html">
 <link rel="import" href="pws-app-elements/pws-shift.html">
 
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 
 <dom-module id="pws-app">
   <template>
@@ -54,12 +52,12 @@
         disabled="[[!signedIn]]">
     </firebase-query>
 
-    <firebase-document
+    <!-- <firebase-document
         id="document"
         app-name="pws"
         path="[[editableShiftId]]"
         data="{{editableShift}}">
-    </firebase-document>
+    </firebase-document> -->
     <paper-toast id="toast" text="Your shift has been booked"></paper-toast>
 
     <firebase-query
@@ -110,14 +108,8 @@
               order-by-child="date_location"
               equal-to="[[_computeDateLocation(searchDate, location.$key)]]"
               data="{{shifts}}">
-          <pws-location location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
+          <pws-location user="[[user]]" location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
         </template>
-        <pws-shift-editor
-            id="editor"
-            locations="[[locations]]"
-            shift="{{editableShift}}"
-            on-close="commitChange">
-        </pws-shift-editor>
       </section>
 
       <section name="myshifts">
