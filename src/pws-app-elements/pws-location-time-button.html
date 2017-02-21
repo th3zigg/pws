@@ -1,4 +1,3 @@
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="pws-behaviour.html">
 
 <dom-module id="pws-location-time-button">
@@ -17,16 +16,62 @@
         margin: 0px;
         padding: 5px;
       }
+
+      .timebutton {
+        display: inline-block;
+        margin: 2px;
+        /*padding: 5px;*/
+        border-radius: 3px;
+        /*background-color: teal;*/
+        border: 1px solid grey;
+      }
+
+      .timebutton .time {
+        background-color: #9C27D0;
+        color: #f3e5f5;
+        padding: 3px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .timebutton .shiftavailable {
+        text-align: center;
+      }
+
+      .disabled .time {
+        background: #eaeaea;
+        color: #a8a8a8;
+        cursor: auto;
+        pointer-events: none;
+      }
+
+      paper-dialog {
+        border-radius: 2px;
+      }
     </style>
 
-    <div class="shifttime">
-      <paper-button class="time"
-          data-location-id$="[[location.$key]]"
-          data-shift-time$="[[shiftTime.displayName]]"
-          data-shift-date$="[[searchDate]]"
-          on-tap="createPrefilledShift">[[shiftTime.displayName]]</paper-button>
-      <div class="numShifts">[[_computeAvailableShiftsDisplayName(shiftsAvailable)]]</div>
-    </div>
+      <div class="timebutton">
+        <div class="time" on-tap="openBookShiftDialog">[[shiftTime.displayName]]</div>
+        <div class="shiftavailable">[[_computeAvailableShiftsDisplayName(shiftsAvailable)]]</div>
+      </div>
+      <firebase-document
+          id="document"
+          app-name="pws"
+          path="[[editableShiftId]]"
+          data="{{editableShift}}">
+      </firebase-document>
+
+      <paper-dialog id="bookshiftDialog" modal>
+        <h2>Confirm Booking</h2>
+        <p>
+          Book this shift at [[location.name]], [[getPrintableDate(searchDate)]] at [[shiftTime.displayName]]?
+        </p>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button on-tap="createShift" dialog-confirm autofocus>Book</paper-button>
+        </div>
+      </paper-dialog>
+    <!-- </div> -->
   </template>
   <script>
     Polymer({
@@ -54,17 +99,17 @@
 
         shiftsAvailable: {
           type: Number,
-          notify: true,
           computed: '_computeShiftsAvailable(shiftsNumber, location)',
-          observer: '_toggleTimeButton'
+          observer: '_toggleTimeButton',
+          value: 0
         }
       },
 
       observers: [
-        '_dataChanged(shifts.splices)'
+        '_updateShiftNumber(shifts.splices)'
       ],
 
-      _dataChanged: function(newData, oldData) {
+      _updateShiftNumber: function(newData, oldData) {
         if (newData) {
           var _this = this;
           this.shiftsNumber = newData.indexSplices[0].object.filter(function(shift) {return shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;}).length;
@@ -78,23 +123,49 @@
       },
 
       _computeShiftsAvailable: function(shiftsNumber, location) {
-        return location.maxPersons - shiftsNumber;
+        // console.log(location.name + ' ' + this.shiftTime.displayName);
+        // console.log(location.maxPersons+'-'+this.shiftsNumber+'='+(location.maxPersons - this.shiftsNumber));
+        return Number(location.maxPersons - this.shiftsNumber);
       },
 
       _toggleTimeButton: function() {
-        var button = this.$$('paper-button.time');
+        var button = this.$$('.timebutton');
 
         var dateNow = moment().format('YYYYMMDD');
         var hourNow = moment().format('H');
-        if (button.dataset.shiftDate === dateNow && Number(hourNow) >= Number(this.shiftTime.startTime)) {
-          button.disabled = true;
+        // console.log(this.shiftTime.displayName + ': ' +this.searchDate+'==='+dateNow+'? '+(this.searchDate == dateNow));
+        if (Number(this.searchDate) === Number(dateNow) && Number(hourNow) >= Number(this.shiftTime.startTime)) {
+          button.className += button.className ? ' disabled' : 'disabled';
         } else {
-          button.disabled = (this.shiftsAvailable === 0);
+          var classes = button.className;
+          button.className = classes.split(' ').filter(function(cls){return cls !== 'disabled';}).join(' ');
         }
       },
 
       _computeAvailableShiftsDisplayName: function(shiftsAvailable) {
         return (shiftsAvailable === 0) ? 'Full' : shiftsAvailable;
+      },
+
+      openBookShiftDialog: function() {
+        this.$.bookshiftDialog.open();
+      },
+
+      createShift: function() {
+        this.editableShiftId = null;
+        this.editableShift.location = this.location.$key;
+        this.editableShift.date = this.searchDate;
+        this.editableShift.publishername = this.user.displayName;
+        this.editableShift.user = this.user.uid;
+        this.editableShift.date = this.editableShift.date;
+        this.editableShift.time = this.shiftTime.displayName;
+        this.editableShift.date_location = this.editableShift.date + '_' + this.editableShift.location;
+        this.editableShift.approved = false;
+
+        return this.$.document.save('/shifts/').then(function() {
+          this.$.document.reset();
+          // this.$$('#toast').open();
+          window.location = '/#/myshifts';
+        }.bind(this));
       }
     });
   </script>

@@ -1,5 +1,4 @@
 <link rel="import" href="../../bower_components/polymerfire/polymerfire.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="pws-location-time-button.html">
 <link rel="import" href="pws-behaviour.html">
 <link rel="import" href="shared-styles.html">
@@ -15,13 +14,34 @@
         background-color: #fff;
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
       }
+
+      .timebutton {
+        display: inline-block;
+        margin: 2px;
+        /*padding: 5px;*/
+        border-radius: 3px;
+        cursor: pointer;
+        /*background-color: teal;*/
+        border: 1px solid grey;
+      }
+
+      .timebutton .time {
+        background-color: #9C27D0;
+        color: #f3e5f5;
+        padding: 3px;
+        font-size: 14px;
+      }
+
+      .timebutton .shiftavailable {
+        text-align: center;
+      }
     </style>
     <div class="card">
       <h4>[[location.name]]</h4>
       <p>Slots available</p>
         <!-- <paper-icon-button icon="icons:event"></paper-icon-button> -->
         <template is="dom-repeat" items="[[shiftTimes]]" as="shiftTime">
-          <pws-location-time-button location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]" shift-time="[[shiftTime]]"></pws-location-time-button>
+          <pws-location-time-button user="[[user]]" location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]" shift-time="[[shiftTime]]"></pws-location-time-button>
         </template>
 
     </div>
@@ -41,6 +61,11 @@
           type: Array
         },
 
+        bookedShiftsNumber: {
+          type: Number,
+          value: 0
+        },
+
         shiftTimes: {
           type: Array,
           readOnly: true,
@@ -55,6 +80,10 @@
             ];
           }
         }
+      },
+
+      _isDatePast: function(shiftTime) {
+
       }
     });
   </script>
