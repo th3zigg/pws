@@ -24,6 +24,7 @@
         border-radius: 3px;
         /*background-color: teal;*/
         border: 1px solid grey;
+        cursor: pointer;
       }
 
       .timebutton .time {
@@ -31,18 +32,14 @@
         color: #f3e5f5;
         padding: 3px;
         font-size: 14px;
-        cursor: pointer;
       }
 
       .timebutton .shiftavailable {
         text-align: center;
       }
 
-      .disabled .time {
-        background: #eaeaea;
-        color: #a8a8a8;
-        cursor: auto;
-        pointer-events: none;
+      .disabled {
+        display: none;
       }
 
       paper-dialog {
@@ -50,8 +47,8 @@
       }
     </style>
 
-      <div class="timebutton">
-        <div class="time" on-tap="openBookShiftDialog">[[shiftTime.displayName]]</div>
+      <div class="timebutton" on-tap="openBookShiftDialog">
+        <div class="time">[[shiftTime.displayName]]</div>
         <div class="shiftavailable">[[_computeAvailableShiftsDisplayName(shiftsAvailable)]]</div>
       </div>
       <firebase-document
@@ -123,8 +120,6 @@
       },
 
       _computeShiftsAvailable: function(shiftsNumber, location) {
-        // console.log(location.name + ' ' + this.shiftTime.displayName);
-        // console.log(location.maxPersons+'-'+this.shiftsNumber+'='+(location.maxPersons - this.shiftsNumber));
         return Number(location.maxPersons - this.shiftsNumber);
       },
 
