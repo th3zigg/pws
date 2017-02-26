@@ -17,6 +17,7 @@
 <link rel="import" href="pws-app-elements/pws-toolbar.html">
 <link rel="import" href="pws-app-elements/pws-location.html">
 <link rel="import" href="pws-app-elements/pws-shift.html">
+<link rel="import" href="pws-app-elements/pws-home.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 
@@ -52,12 +53,6 @@
         disabled="[[!signedIn]]">
     </firebase-query>
 
-    <!-- <firebase-document
-        id="document"
-        app-name="pws"
-        path="[[editableShiftId]]"
-        data="{{editableShift}}">
-    </firebase-document> -->
     <paper-toast id="toast" text="Your shift has been booked"></paper-toast>
 
     <firebase-query
@@ -85,7 +80,6 @@
         <pws-toolbar id="pwstoolbar"
             signed-in="[[signedIn]]" search-date="{{searchDate}}"
             on-sign-out="signOut" style="width: 100%;"></pws-toolbar>
-        <span>[[user.displayName]]</span>
       </app-toolbar>
     </app-header>
     <app-drawer id="drawer" swipe-open>
@@ -94,6 +88,7 @@
           attr-for-selected="name"
           on-iron-activate="_drawerSelected">
         <paper-item name="home">Home</paper-item>
+        <paper-item name="locations">Locations</paper-item>
         <paper-item name="myshifts">My Shifts</paper-item>
         <paper-item name="admin">Admin</paper-item>
       </paper-listbox>
@@ -101,6 +96,9 @@
 
     <iron-pages selected="[[_pageData.page]]" attr-for-selected="name">
       <section name="home">
+        <pws-home></pws-home>
+      </section>
+      <section name="locations">
         <template is="dom-repeat" items="[[locations]]" as="location">
           <firebase-query
               app-name="pws"
