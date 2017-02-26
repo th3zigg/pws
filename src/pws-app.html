@@ -10,6 +10,7 @@
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
@@ -87,10 +88,24 @@
           selected="{{_pageData.page}}"
           attr-for-selected="name"
           on-iron-activate="_drawerSelected">
-        <paper-item name="home">Home</paper-item>
-        <paper-item name="locations">Locations</paper-item>
-        <paper-item name="myshifts">My Shifts</paper-item>
-        <paper-item name="admin">Admin</paper-item>
+
+        <paper-icon-item name="home">
+          <iron-icon icon="home" item-icon></iron-icon>
+          Home
+        </paper-icon-item>
+        <paper-icon-item name="locations">
+          <iron-icon icon="room" item-icon></iron-icon>
+          Locations
+        </paper-icon-item>
+        <paper-icon-item name="myshifts">
+          <iron-icon icon="event" item-icon></iron-icon>
+          My Shifts
+        </paper-icon-item>
+        <paper-icon-item name="news">
+          <iron-icon icon="description" item-icon></iron-icon>
+          News
+        </paper-icon-item>
+        <paper-icon-item name="admin">Admin</paper-icon-item>
       </paper-listbox>
     </app-drawer>
 
@@ -185,7 +200,6 @@
       },
 
       _drawerSelected: function() {
-        console.log(this._pageData.page);
         if (!this.$.drawer.persistent) this.$.drawer.close();
       },
 
