@@ -1,4 +1,5 @@
 <link rel="import" href="pws-behaviour.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
 <dom-module id="pws-location-time-button">
   <template>
@@ -20,9 +21,7 @@
       .timebutton {
         display: inline-block;
         margin: 2px;
-        /*padding: 5px;*/
         border-radius: 3px;
-        /*background-color: teal;*/
         border: 1px solid grey;
         cursor: pointer;
       }
@@ -49,7 +48,7 @@
 
       <div class="timebutton" on-tap="openBookShiftDialog">
         <div class="time">[[shiftTime.displayName]]</div>
-        <div class="shiftavailable">[[_computeAvailableShiftsDisplayName(shiftsAvailable)]]</div>
+        <div class="shiftavailable">[[_computeAvailableShiftsDisplayName(shiftsAvailable, searchDate)]]</div>
       </div>
       <firebase-document
           id="document"
@@ -69,6 +68,10 @@
         </div>
       </paper-dialog>
     <!-- </div> -->
+      <paper-toast id="toast" text="Your shift has been booked.">
+        <a href="/#/myshifts" style="color: yellow; text-decoration: none;">  View your shifts</a>
+      </paper-toast>
+
   </template>
   <script>
     Polymer({
@@ -83,12 +86,6 @@
           observer: '_toggleTimeButton'
         },
 
-        location: {
-          type: Object
-        },
-
-        shiftTime: Object,
-
         shiftsNumber: {
           type: Number,
           value: 0
@@ -99,6 +96,11 @@
           computed: '_computeShiftsAvailable(shiftsNumber, location)',
           observer: '_toggleTimeButton',
           value: 0
+        },
+
+        shiftBooked: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -109,7 +111,12 @@
       _updateShiftNumber: function(newData, oldData) {
         if (newData) {
           var _this = this;
-          this.shiftsNumber = newData.indexSplices[0].object.filter(function(shift) {return shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;}).length;
+          // array has duplicates, so reduce to a map then get size
+          this.shiftsNumber = newData.indexSplices[0].object.filter(function(shift) {
+            return shift.date === _this.searchDate && shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;
+          }).reduce(function(myMap, el) {
+            return myMap.set(el.$key, el);
+          }, new Map()).size;
         } else {
           this.shiftsNumber = 0;
         }
@@ -128,7 +135,6 @@
 
         var dateNow = moment().format('YYYYMMDD');
         var hourNow = moment().format('H');
-        // console.log(this.shiftTime.displayName + ': ' +this.searchDate+'==='+dateNow+'? '+(this.searchDate == dateNow));
         if (Number(this.searchDate) === Number(dateNow) && Number(hourNow) >= Number(this.shiftTime.startTime)) {
           button.className += button.className ? ' disabled' : 'disabled';
         } else {
@@ -138,11 +144,28 @@
       },
 
       _computeAvailableShiftsDisplayName: function(shiftsAvailable) {
+        if (this.usershifts !== undefined) {
+          var _this = this;
+          var bookedShift = this.usershifts.find(function(shift) {
+            return shift.date === _this.searchDate && shift.time === _this.shiftTime.displayName && shift.location === _this.location.$key;
+          });
+          if (bookedShift !== undefined) {
+            this.shiftBooked = true;
+            return 'BOOKED';
+          } else {
+            return shiftsAvailable;
+          }
+        }
         return (shiftsAvailable === 0) ? 'Full' : shiftsAvailable;
       },
 
       openBookShiftDialog: function() {
-        this.$.bookshiftDialog.open();
+        if(this.shiftBooked !== undefined && this.shiftBooked) {
+          return;
+        }
+        if (this.shiftsAvailable > 0) {
+          this.$.bookshiftDialog.open();
+        }
       },
 
       createShift: function() {
@@ -158,8 +181,7 @@
 
         return this.$.document.save('/shifts/').then(function() {
           this.$.document.reset();
-          // this.$$('#toast').open();
-          window.location = '/#/myshifts';
+          this.$.toast.open();
         }.bind(this));
       }
     });
