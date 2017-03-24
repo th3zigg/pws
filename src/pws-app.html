@@ -19,6 +19,7 @@
 <link rel="import" href="pws-app-elements/pws-location.html">
 <link rel="import" href="pws-app-elements/pws-shift.html">
 <link rel="import" href="pws-app-elements/pws-home.html">
+<link rel="import" href="pws-app-elements/pws-news.html">
 
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 
@@ -54,8 +55,6 @@
         disabled="[[!signedIn]]">
     </firebase-query>
 
-    <paper-toast id="toast" text="Your shift has been booked"></paper-toast>
-
     <firebase-query
         app-name="pws"
         path="/shifts"
@@ -63,6 +62,13 @@
         equal-to="[[user.uid]]"
         data="{{usershifts}}">
     </firebase-query>
+
+    <firebase-document
+        app-name="pws"
+        id="userProfile"
+        path="/userprofiles/[[user.uid]]"
+        data="{{userprofile}}">
+    </firebase-document>
 
     <app-location route="{{route}}" use-hash-as-path></app-location>
     <app-route
@@ -105,7 +111,9 @@
           <iron-icon icon="description" item-icon></iron-icon>
           News
         </paper-icon-item>
-        <paper-icon-item name="admin">Admin</paper-icon-item>
+        <template is="dom-if" if="[[_isAdmin(userprofile)]]">
+          <paper-icon-item name="admin">Admin</paper-icon-item>
+        </template>
       </paper-listbox>
     </app-drawer>
 
@@ -115,13 +123,7 @@
       </section>
       <section name="locations">
         <template is="dom-repeat" items="[[locations]]" as="location">
-          <firebase-query
-              app-name="pws"
-              path="/shifts"
-              order-by-child="date_location"
-              equal-to="[[_computeDateLocation(searchDate, location.$key)]]"
-              data="{{shifts}}">
-          <pws-location user="[[user]]" location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]"></pws-location>
+          <pws-location usershifts="[[usershifts]]" user="[[user]]" location="[[location]]" search-date="[[searchDate]]"></pws-location>
         </template>
       </section>
 
@@ -132,7 +134,12 @@
             <pws-shift id$="[[shift.$key]]" locations=[[locations]] shift="[[shift]]"></pws-shift>
           </template>
         </template>
+
         <paper-icon-button icon="app:menu" drawer-toggle></paper-icon-button>
+      </section>
+
+      <section name="news">
+        <pws-news></pws-news>
       </section>
 
       <section name="admin">
@@ -180,7 +187,12 @@
       behaviors: [Polymer.PWSAppBehaviour],
 
       signIn: function() {
-        this.$.auth.signInWithPopup();
+        this.$.auth.signInWithPopup().then(function(response) {
+          if (!this.userprofile.isAdmin) {
+            this.userprofile.isAdmin = false;
+          }
+          this.$.userProfile.save('/userprofiles/', response.user.uid);
+        }.bind(this));
       },
 
       get shiftsPath() {
@@ -191,16 +203,14 @@
         return this.shiftsPath + '/' + shiftId;
       },
 
-      _computeDateLocation: function(date, location) {
-        return date + '_' + location;
-      },
-
       _computeShowDateSelector: function(signedIn, route) {
         return signedIn && route.path && route.path === '/home';
       },
 
       _drawerSelected: function() {
-        if (!this.$.drawer.persistent) this.$.drawer.close();
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
       },
 
       _sortShifts: function(a, b) {
@@ -215,6 +225,14 @@
 
       _isOlderShift: function(shift) {
         return Number(shift.date) < Number(this.weekdays[0].num);
+      },
+
+      _isAdmin: function(userprofile) {
+        if (userprofile !== undefined) {
+          return (userprofile.isAdmin !== undefined) ? userprofile.isAdmin : false;
+        } else {
+          return false;
+        }
       }
     });
   </script>
