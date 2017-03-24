@@ -41,7 +41,22 @@
       <p>Slots available</p>
         <!-- <paper-icon-button icon="icons:event"></paper-icon-button> -->
         <template is="dom-repeat" items="[[shiftTimes]]" as="shiftTime">
-          <pws-location-time-button user="[[user]]" location="[[location]]" search-date="[[searchDate]]" shifts="[[shifts]]" shift-time="[[shiftTime]]"></pws-location-time-button>
+          <firebase-query
+              app-name="pws"
+              path="/shifts"
+              order-by-child="date_location"
+              equal-to="[[_computeDateLocation(searchDate, location.$key)]]"
+              data="{{shifts}}">
+          </firebase-query>
+
+          <pws-location-time-button
+              usershifts="[[usershifts]]"
+              user="[[user]]"
+              location="[[location]]"
+              search-date="[[searchDate]]"
+              shifts="[[shifts]]"
+              shift-time="[[shiftTime]]">
+          </pws-location-time-button>
         </template>
 
     </div>
@@ -53,14 +68,6 @@
       behaviors: [Polymer.PWSAppBehaviour],
 
       properties: {
-        location: {
-          type: Object
-        },
-
-        shifts: {
-          type: Array
-        },
-
         bookedShiftsNumber: {
           type: Number,
           value: 0
@@ -80,7 +87,11 @@
             ];
           }
         }
-      }
+      },
+
+      _computeDateLocation: function(date, location) {
+        return date + '_' + location;
+      },      
     });
   </script>
 </dom-module>
