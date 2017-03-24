@@ -1,0 +1,51 @@
+<dom-module id="pws-news">
+  <template>
+    <style>
+      .card {
+        margin: 12px;
+        padding: 16px;
+        color: #757575;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      .clickable {
+        cursor: pointer;
+      }
+
+      .icon {
+      	display: inline-block; width: 24px; height: 24px; vertical-align: middle; fill: currentcolor;
+      }
+
+      .label {
+        display: inline-block; vertical-align: middle; padding-left: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <p style="font-style: italic;">
+        14th March 2017
+      </p>
+      <p>
+        News and other information will go here.
+      </p>
+      <p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer consectetur nisl quis nisi vulputate ultrices. Suspendisse at eros nisi. Etiam nec lacinia lorem. Cras vel sapien sit amet dui tempor pellentesque. Etiam rutrum ipsum ac odio dignissim venenatis. Praesent vulputate ullamcorper metus aliquam iaculis.        
+      </p>
+    </div>
+    <div class="card">
+      <p style="font-style: italic;">
+        3rd February 2017
+      </p>
+      <p>
+        Older news is here.
+      </p>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'pws-news'
+    });
+  </script>
+</dom-module>
