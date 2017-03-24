@@ -182,10 +182,9 @@
 
       getLocationName: function(locationId) {
         var location = this.locations.find(function(element) {return element.$key === locationId;});
-        if (location) {
+        if (location !== undefined) {
           return location.name;
         }
-        // return locationId;
       },
 
       _computeShiftPath: function(shift) {
